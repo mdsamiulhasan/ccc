@@ -1,4 +1,6 @@
+
 public ActionResult Index()
+
         {
             var student = db.students.Include(a=>a.addmitions.Select(c=>c.course)).OrderBy(s=>s.sid).ToList();
             return View(student);
