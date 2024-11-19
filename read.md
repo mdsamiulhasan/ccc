@@ -1,109 +1,84 @@
 
-public ActionResult Index()
+ public ActionResult Index()
+ {
+     var students = db.students.Include(c => c.admissions.Select(b => b.course)).OrderBy(x => x.sid).ToList();
+     return View(students);
+ }
+ //create
+ public ActionResult Create()
+ {
+    
+     return View();
+ }
+      
 
-        {
-            var student = db.students.Include(a=>a.addmitions.Select(c=>c.course)).OrderBy(s=>s.sid).ToList();
-            return View(student);
-        }
-        //create
-        public ActionResult Create()
-        {
+ [HttpPost]
+ public ActionResult Create(student student, int[] cid)
+ {
+     var st = new student
+     {
+         sid = student.sid,
+         sname = student.sname,
+         age = student.age,
+         mark = student.mark,
+         picture = SaveImage(student.pictureFile)
+     };        
+     db.admissions.RemoveRange(db.admissions.Where(c => c.sid == student.sid));  
+     foreach (var c in cid)
+     {
+         db.admissions.Add(new admission { student = st, sid = student.sid, cid = c });
+     }
 
-            return View();
-        }
-        //post
-        [HttpPost]  
-        public ActionResult Create(student student, int[] cid)
-        {
-            if (ModelState.IsValid) {
-                var st = new student()
-                {
-                    sname = student.sname,
-                    age = student.age,
-                    ismorning = student.ismorning,
-                    mark=student.mark,                    
-                };
-                HttpPostedFileBase file = student.pictureFile;
-                if (file != null) {
-                    string filename = Path.Combine("/Images/", DateTime.Now.Ticks.ToString()+ Path.GetExtension(file.FileName));
-                    file.SaveAs(Server.MapPath(filename));
-                    st.picture = filename;
-                }
-                foreach (var c in cid) {
-                    addmition a = new addmition()
-                    {
-                        student = st,
-                        sname = student.sname,
-                        sid = student.sid,
-                        cid = c,
-                    };
-                    db.addmitions.Add(a);
-                  
-                }
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(student);
-        }
-        // Partial
-        public ActionResult AddCourse(int? id)
-        {
-            ViewBag.course = new SelectList(db.courses.ToList(), "cid", "cname", id ?? 0);
-            return PartialView("_addCourse");
-        }
+     db.SaveChanges();
+     return RedirectToAction("Index");
+ }
+ private string SaveImage(HttpPostedFileBase file)
+ {
+     if (file == null) return null;
 
-        //edit
-        public ActionResult Edit(int ? id)
-        {
-            var student = db.students.Find(id);
-            return View(student);
-        }
-        [HttpPost]
-        public ActionResult Edit(student student, int[] cid)
-        {
-            if (ModelState.IsValid)
-            {              
-                var st = db.students.Find(student.sid);
-                    st.sname = student.sname;
-                    st.age = student.age;
-                    st.ismorning = student.ismorning;
-                    st.mark = student.mark;
-               
-                HttpPostedFileBase file = student.pictureFile;
-                if (file != null)
-                {
-                    string filename = Path.Combine("/Images/", DateTime.Now.Ticks.ToString() + Path.GetExtension(file.FileName));
-                    file.SaveAs(Server.MapPath(filename));
-                    st.picture = filename;
-                }
-                else {
-                    st.picture = st.picture;
-                }          
-                var a = db.addmitions.Where(c => c.sid == student.sid);
-                db.addmitions.RemoveRange(a);
-                foreach (var c in cid)
-                {
-                    addmition ad = new addmition()
-                    {
-                        student = st,
-                        sname = student.sname,
-                        sid = student.sid,
-                        cid = c,
-                    };
-                    db.addmitions.Add(ad);
-                }
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            return View(student);
-        }
-        //delete
-        public ActionResult Delete(int? id)
-        {
-            var student = db.students.Find(id);
-            var a = db.addmitions.Where(c => c.sid == student.sid);
-            db.addmitions.RemoveRange(a);
-            db.students.Remove(student);
-            db.SaveChanges();
-            return RedirectToAction("Index");
-        }
+     var filePath = Path.Combine("/images", DateTime.Now.Ticks + Path.GetExtension(file.FileName));
+     file.SaveAs(Server.MapPath(filePath));
+     return filePath;
+ }
+
+
+ //partial View
+ public ActionResult Addcourse(int? id)
+ {
+     ViewBag.courses = new SelectList(db.courses.ToList(), "cid", "cname", id ?? 0);
+     return PartialView("_addcourse");
+ }
+ //delete
+ public ActionResult Delete(int? id)
+ {
+     db.admissions.RemoveRange(db.admissions.Where(c => c.sid == id));
+     db.students.Remove(db.students.Find(id));
+     db.SaveChanges();
+     return RedirectToAction("Index");
+ }
+
+ //edit
+ public ActionResult Edit(int? id)
+ {
+     var students = db.students.Find(id);
+     return View(students);
+ }
+
+ [HttpPost]
+ public ActionResult Edit(student student, HttpPostedFileBase pictureFile)
+ {
+     if (ModelState.IsValid)
+     {
+         if (pictureFile != null)
+         {              
+             var fileName = DateTime.Now.Ticks.ToString() + Path.GetExtension(pictureFile.FileName);
+             var filePath = Path.Combine(Server.MapPath("~/images"), fileName);         
+             pictureFile.SaveAs(filePath);
+             student.picture = "/images/" + fileName;
+         }
+         db.Entry(student).State = EntityState.Modified;
+         db.SaveChanges();
+         return RedirectToAction("Index");
+     }
+     return View(student);
+ }
