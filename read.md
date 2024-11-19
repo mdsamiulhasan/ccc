@@ -1,17 +1,13 @@
-
  public ActionResult Index()
  {
-     var students = db.students.Include(c => c.admissions.Select(b => b.course)).OrderBy(x => x.sid).ToList();
+   var students = db.students.Include(c => c.admissions.Select(b => b.course)).OrderBy(x => x.sid).ToList();
      return View(students);
  }
  //create
  public ActionResult Create()
  {
-    
-     return View();
- }
-      
-
+      return View();
+ }     
  [HttpPost]
  public ActionResult Create(student student, int[] cid)
  {
@@ -40,8 +36,6 @@
      file.SaveAs(Server.MapPath(filePath));
      return filePath;
  }
-
-
  //partial View
  public ActionResult Addcourse(int? id)
  {
@@ -56,7 +50,6 @@
      db.SaveChanges();
      return RedirectToAction("Index");
  }
-
  //edit
  public ActionResult Edit(int? id)
  {
