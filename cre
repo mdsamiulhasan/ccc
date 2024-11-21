@@ -1,0 +1,60 @@
+
+@using (Html.BeginForm("Create", "Student", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+
+    <div class="form-horizontal">
+        <h4>student</h4>
+        <hr />
+        <div class="form-group">
+            @Html.LabelFor(model => model.sname, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.sname, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.age, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.age, new { @class = "form-control", type = "date" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.mark, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.mark, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ismorning, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.CheckBoxFor(model => model.ismorning)
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-10">
+                @Html.LabelFor(model => model.picture, new { @class = "control-label col-md-2" })
+                @Html.TextBoxFor(model => model.pictureFile, new { @class = "form-control", type = "file" })
+            </div>
+        </div>
+        <div>
+            <input type="button" value="add more" id="btnPlus" />
+        </div>
+        <div id="container">
+            @Html.Action("Addmore", "Student")
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
