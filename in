@@ -1,0 +1,61 @@
+<section>
+    @Html.ActionLink("Create", "Create")
+    <table class="table table-center">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.sid)</th>
+                <th>@Html.DisplayNameFor(m => m.sname)</th>
+                <th>@Html.DisplayNameFor(m => m.age)</th>
+                <th>@Html.DisplayNameFor(m => m.ismorning)</th>
+                <th>@Html.DisplayNameFor(m => m.mark)</th>
+                <th>Picture</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(m => s.sid)</td>
+                    <td>@Html.DisplayFor(m => s.sname)</td>
+                    <td>@Html.DisplayFor(m => s.age)</td>
+                    <td>@Html.DisplayFor(m => s.ismorning)</td>
+                    <td>@Html.DisplayFor(m => s.mark)</td>
+                    <td>
+                        <img src="@s.picture" width="60" height="60" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <table class="table table-active text-center">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        @Html.Label("course id")
+                                    </th>
+                                    <th>
+                                        @Html.Label("course Name")
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var c in s.admissions)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(m => c.course.cid)</td>
+                                        <td>@Html.DisplayFor(m => c.course.cname)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        @Html.ActionLink("Edit", "Edit", new { id = s.sid }, new { @class = "btn btn-primary" })
+                        @Html.ActionLink("Delete", "Delete", new { id = s.sid }, new { @class = "btn btn-danger" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</section>
