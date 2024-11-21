@@ -1,77 +1,96 @@
  public ActionResult Index()
  {
-   var students = db.students.Include(c => c.admissions.Select(b => b.course)).OrderBy(x => x.sid).ToList();
+     var students = db.students.Include(a => a.admissions.Select(c => c.course)).OrderBy(s => s.sid).ToList();
      return View(students);
  }
  //create
  public ActionResult Create()
  {
-      return View();
- }     
+     return View();
+ }
+ //post
  [HttpPost]
  public ActionResult Create(student student, int[] cid)
  {
-     var st = new student
+     var st = new student()
      {
          sid = student.sid,
          sname = student.sname,
          age = student.age,
          mark = student.mark,
-         picture = SaveImage(student.pictureFile)
-     };        
-     db.admissions.RemoveRange(db.admissions.Where(c => c.sid == student.sid));  
+         ismorning = student.ismorning,
+
+     };
+
+     HttpPostedFileBase file = student.pictureFile;
+     if (file != null)
+     {
+         string filename = Path.Combine("/images/", DateTime.Now.Ticks.ToString() + Path.GetExtension(file.FileName));
+         file.SaveAs(Server.MapPath(filename));
+         st.picture = filename;
+     }
+     else
+     {
+         st.picture = st.picture;
+     }
+     var a = db.admissions.Where(c => c.cid == student.sid);
+     db.admissions.RemoveRange(a);
      foreach (var c in cid)
      {
-         db.admissions.Add(new admission { student = st, sid = student.sid, cid = c });
+         admission ad = new admission()
+         {
+             student = st,
+             sname = student.sname,
+             sid = student.sid,
+             cid = c,
+         };
+         db.admissions.Add(ad);
+
      }
-
      db.SaveChanges();
      return RedirectToAction("Index");
  }
- private string SaveImage(HttpPostedFileBase file)
+ //partial
+ public ActionResult Addmore(int ?id)
  {
-     if (file == null) return null;
-
-     var filePath = Path.Combine("/images", DateTime.Now.Ticks + Path.GetExtension(file.FileName));
-     file.SaveAs(Server.MapPath(filePath));
-     return filePath;
- }
- //partial View
- public ActionResult Addcourse(int? id)
- {
-     ViewBag.courses = new SelectList(db.courses.ToList(), "cid", "cname", id ?? 0);
-     return PartialView("_addcourse");
- }
- //delete
- public ActionResult Delete(int? id)
- {
-     db.admissions.RemoveRange(db.admissions.Where(c => c.sid == id));
-     db.students.Remove(db.students.Find(id));
-     db.SaveChanges();
-     return RedirectToAction("Index");
+     ViewBag.course = new SelectList(db.courses.ToList(),"cid","cname", id??0);
+  return  PartialView("_addmore");
  }
  //edit
  public ActionResult Edit(int? id)
  {
-     var students = db.students.Find(id);
-     return View(students);
+     var student = db.students.Find(id);
+     var a = db.admissions.Where(c => c.sid == student.sid).ToList();
+     student.admissions = a;
+     return View(student);
  }
-
+ //edit post
  [HttpPost]
+ [ValidateAntiForgeryToken]
  public ActionResult Edit(student student, HttpPostedFileBase pictureFile)
  {
      if (ModelState.IsValid)
      {
+
          if (pictureFile != null)
-         {              
-             var fileName = DateTime.Now.Ticks.ToString() + Path.GetExtension(pictureFile.FileName);
-             var filePath = Path.Combine(Server.MapPath("~/images"), fileName);         
+         {
+             var filePath = Path.Combine(Server.MapPath("~/images"), pictureFile.FileName);
              pictureFile.SaveAs(filePath);
-             student.picture = "/images/" + fileName;
+             student.picture = "/Images/" + pictureFile.FileName;
          }
          db.Entry(student).State = EntityState.Modified;
          db.SaveChanges();
          return RedirectToAction("Index");
      }
      return View(student);
+ }
+ //delete
+ public ActionResult Delete(int?id)
+ {
+     var student = db.students.Find(id);
+     var a = db.admissions.Where(c => c.sid == student.sid);
+     db.admissions.RemoveRange(a);
+     db.students.Remove(student);
+     db.SaveChanges();
+     return RedirectToAction("Index");
  }
